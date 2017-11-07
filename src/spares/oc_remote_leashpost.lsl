@@ -61,14 +61,14 @@ integer RemoteChannel(string sID,integer iOffset) {
 }
 
 FailSafe() {
+    integer fullPerms = PERM_COPY | PERM_MODIFY | PERM_TRANSFER; // calculate full perm mask
     string sName = llGetScriptName();
-    if ((key)sName) return;
-    if (!(llGetObjectPermMask(1) & 0x4000)
-    || !(llGetObjectPermMask(4) & 0x4000)
-    || !((llGetInventoryPermMask(sName,1) & 0xe000) == 0xe000)
-    || !((llGetInventoryPermMask(sName,4) & 0xe000) == 0xe000)
-    || sName != "oc_remote_leashpost")
-        llRemoveInventory(sName);
+    if((key)sName) return;
+    if (!((llGetObjectPermMask(MASK_OWNER) & PERM_MODIFY) == PERM_MODIFY)
+    || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
+    || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
+    || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
+    || sName != "oc_remote_leashpost" ) llRemoveInventory(sName);
 }
 
 default {
