@@ -159,7 +159,6 @@ key news_request;
 string g_sLastNewsTime = "0";
 
 string g_sWeb = "http://virtualdisgrace.com/oc/";
-string g_sWorldAPI = "http://world.secondlife.com/";
 
 integer g_iUpdateAuth;
 integer g_iWillingUpdaters = 0;
@@ -490,14 +489,14 @@ BuildLockElementList() {//EB
 }
 
 FailSafe() {
+    integer fullPerms = PERM_COPY | PERM_MODIFY | PERM_TRANSFER; // calculate full perm mask
     string sName = llGetScriptName();
     if((key)sName) return;
-    integer i;
-    if (!(llGetObjectPermMask(1) & 0x4000)
-    || !(llGetObjectPermMask(4) & 0x4000)
-    || !((llGetInventoryPermMask(sName,1) & 0xe000) == 0xe000)
-    || !((llGetInventoryPermMask(sName,4) & 0xe000) == 0xe000)
-    || sName != "oc_sys" || i) llRemoveInventory(sName);
+    if (!((llGetObjectPermMask(MASK_OWNER) & PERM_MODIFY) == PERM_MODIFY)
+    || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
+    || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
+    || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
+    || sName != "oc_sys" ) llRemoveInventory(sName);
 }
 
 SetLockElementAlpha() { //EB
