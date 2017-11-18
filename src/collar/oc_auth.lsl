@@ -21,7 +21,7 @@
 //                    |     .'    ~~~~       \    / :                       //
 //                     \.. /               `. `--' .'                       //
 //                        |                  ~----~                         //
-//                          Authorizer - 171108.1                           //
+//                          Authorizer - 171116.2                           //
 // ------------------------------------------------------------------------ //
 //  Copyright (c) 2008 - 2017 Nandana Singh, Garvin Twine, Cleo Collins,    //
 //  Satomi Ahn, Master Starship, Sei Lisa, Joy Stipe, Wendy Starfall,       //
@@ -434,8 +434,8 @@ UserCommand(integer iNum, string sStr, key kID, integer iRemenu) { // here iNum:
             if (sOutput) llMessageLinked(LINK_DIALOG,NOTIFY,"0"+"Blocked: "+sOutput,kID);
             //if (g_sGroupName) llMessageLinked(LINK_DIALOG,NOTIFY,"0"+"Group: "+g_sGroupName,kID);
             if (g_kGroup) llMessageLinked(LINK_DIALOG,NOTIFY,"0"+"Group: secondlife:///app/group/"+(string)g_kGroup+"/about",kID);
-            if (g_iVanilla) sOutput = g_sFlavor+": enabled";
-            else sOutput = g_sFlavor+": disabled";
+            if (g_iVanilla) sOutput = g_sFlavor+" Mode: enabled";
+            else sOutput = g_sFlavor+" Mode: disabled";
             llMessageLinked(LINK_DIALOG,NOTIFY,"0"+sOutput,kID);
             sOutput="closed";
             if (g_iOpenAccess) sOutput="open";
@@ -455,6 +455,7 @@ UserCommand(integer iNum, string sStr, key kID, integer iRemenu) { // here iNum:
                 //UserCommand(iNum, "rm owner " + g_sWearerID, kID, FALSE);
                 llMessageLinked(LINK_SAVE,LM_SETTING_DELETE,g_sSettingToken+"vanilla","");
                 llMessageLinked(LINK_DIALOG,NOTIFY,"1"+"Vanilla disabled.",kID);
+                if (iRemenu && kID == g_sWearerID) iNum = Auth(kID,FALSE);
             } else {
                 sStr = "disabled.";
                 if (g_iVanilla) sStr = "enabled.";
