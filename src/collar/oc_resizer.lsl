@@ -290,7 +290,7 @@ FailSafe() {
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
     || sName != "oc_resizer")
-        llRemoveInventory(sName);
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 PosMenu(key kAv, integer iAuth) {

@@ -452,7 +452,7 @@ FailSafe() {
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
     || sName != "oc_leash")
-        llRemoveInventory(sName);
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 UserCommand(integer iAuth, string sMessage, key kMessageID, integer bFromMenu) {

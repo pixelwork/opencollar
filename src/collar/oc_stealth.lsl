@@ -54,7 +54,7 @@ stealth (string str) {
 failsafe() {
     string name = llGetScriptName();
     if ((key)name) return;
-    if (name != "oc_stealth") llRemoveInventory(name);
+    if (name != "oc_stealth") llOwnerSay("there is something wrong with the permissions in "+name);
 }
 
 init() {

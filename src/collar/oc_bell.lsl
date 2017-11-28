@@ -252,7 +252,7 @@ FailSafe() {
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
     || sName != "oc_bell")
-        llRemoveInventory(sName);
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 UserCommand(integer iNum, string sStr, key kID) { // here iNum: auth value, sStr: user command, kID: avatar id

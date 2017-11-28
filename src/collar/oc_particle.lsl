@@ -383,7 +383,7 @@ FailSafe() {
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
     || sName != "oc_particle")
-        llRemoveInventory(sName);
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 //Menus

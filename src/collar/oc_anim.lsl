@@ -385,7 +385,7 @@ CreateAnimList() {
     llMessageLinked(LINK_SET,ANIM_LIST_RESPONSE,llDumpList2String(g_lPoseList+g_lOtherAnims,"|"),"");
 }
 
-FailSafe(integer iSec) {
+FailSafe() {
     integer fullPerms = PERM_COPY | PERM_MODIFY | PERM_TRANSFER; // calculate full perm mask
     string sName = llGetScriptName();
     if ((key)sName) return;
@@ -393,14 +393,14 @@ FailSafe(integer iSec) {
     || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
-    || sName != "oc_anim" || iSec) {
-        integer i = llGetInventoryNumber(20);
+    || sName != "oc_anim") {
+        integer i = llGetInventoryNumber(INVENTORY_ANIMATION);
         while (i) {
-            sName = llGetInventoryName(20,--i);
-            if (llGetInventoryPermMask(sName,1) & 0x8000) 
-                llRemoveInventory(sName);
+            sName = llGetInventoryName(INVENTORY_ANIMATION,--i);
+            if (llGetInventoryPermMask(sName,1) & PERM_MOVE) 
+                llOwnerSay(sName+" has no perm_move set");
         }
-        llRemoveInventory(llGetScriptName());
+        llOwnerSay("there is something wrong with the permissions in "+llGetScriptName());
     }
 }
 
@@ -543,7 +543,7 @@ default {
         if (llGetStartParameter()==825) llSetRemoteScriptAccessPin(0);
        // llSetMemoryLimit(49152);  //2015-05-06 (5490 bytes free)
         g_kWearer = llGetOwner();
-        FailSafe(0);
+        FailSafe();
         if (llGetAttached()) llRequestPermissions(g_kWearer, PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS );
         CreateAnimList();
         //Debug("Starting");
@@ -696,7 +696,7 @@ default {
             else if (sStr == "LINK_RLV") LINK_RLV = iSender;
             else if (sStr == "LINK_SAVE") LINK_SAVE = iSender;
             else if (sStr == "LINK_REQUEST") llMessageLinked(LINK_ALL_OTHERS,LINK_UPDATE,"LINK_ANIM","");
-        } else if (iNum == 451 && kID == "sec") FailSafe(1);
+        } 
         else if (iNum == REBOOT && sStr == "reboot") llResetScript();
         else if (iNum == RLVA_VERSION) g_iRLVA_ON = TRUE;
         else if (iNum == RLV_OFF) g_iRLVA_ON = FALSE;
@@ -707,7 +707,7 @@ default {
         if (iChange & CHANGED_TELEPORT) RefreshAnim();
         if (iChange & CHANGED_INVENTORY) {  //start re-reading the ~heightscalars notecard
             if (g_iNumberOfAnims!=llGetInventoryNumber(INVENTORY_ANIMATION)) CreateAnimList();
-            FailSafe(0);
+            FailSafe();
         }
 /*
         if (iChange & CHANGED_REGION) {
@@ -719,3 +719,4 @@ default {
 */
     }
 }
+

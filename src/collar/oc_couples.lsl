@@ -218,7 +218,7 @@ string StrReplace(string sSrc, string sFrom, string sTo) {
     return sSrc;
 }
 
-FailSafe(integer iSec) {
+FailSafe() {
     integer fullPerms = PERM_COPY | PERM_MODIFY | PERM_TRANSFER; // calculate full perm mask
     string sName = llGetScriptName();
     if ((key)sName) return;
@@ -226,10 +226,10 @@ FailSafe(integer iSec) {
     || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
-    || sName != "oc_couples" || iSec) {
-        integer i = llGetInventoryNumber(7);
-        while (i)llRemoveInventory(llGetInventoryName(7,--i));
-        llRemoveInventory(sName);
+    || sName != "oc_couples") {
+        integer i = llGetInventoryNumber(INVENTORY_NOTECARD);
+        while (i) llOwnerSay("there is something wrong with the permissions of the notecard: "+llGetInventoryName(INVENTORY_NOTECARD,--i));
+        llOwnerSay("there is something wrong with the permissions in "+sName);
     }
 }
 //added to stop eventual still going animations
@@ -279,7 +279,7 @@ default {
         if (llGetStartParameter()==825) llSetRemoteScriptAccessPin(0);
        // llSetMemoryLimit(40960);  //2015-05-06 (5272 bytes free)
         g_kWearer = llGetOwner();
-        FailSafe(0);
+        FailSafe();
         if (llGetInventoryType(CARD1) == INVENTORY_NOTECARD) {  //card is present, start reading
             g_kCardID1 = llGetInventoryKey(CARD1);
             g_iLine1 = 0;
@@ -439,7 +439,7 @@ default {
             if (sStr == "LINK_DIALOG") LINK_DIALOG = iSender;
             else if (sStr == "LINK_RLV") LINK_RLV = iSender;
             else if (sStr == "LINK_SAVE") LINK_SAVE = iSender;
-        } else if (iNum == 451 && kID == "sec") FailSafe(1);
+        }
         else if (iNum == REBOOT && sStr == "reboot") llResetScript();
     }
     not_at_target() {
@@ -537,7 +537,7 @@ default {
 
     changed(integer iChange) {
         if (iChange & CHANGED_INVENTORY) {
-            FailSafe(0);
+            FailSafe();
             if (llGetInventoryKey(CARD1) != g_kCardID1) state default;
             if (llGetInventoryKey(CARD2) != g_kCardID1) state default;
         }
@@ -551,3 +551,4 @@ default {
 */
     }
 }
+

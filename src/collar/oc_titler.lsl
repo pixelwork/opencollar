@@ -158,7 +158,7 @@ FailSafe() {
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
     || sName != "oc_titler")
-        llRemoveInventory(sName);
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 UserCommand(integer iAuth, string sStr, key kAv) {

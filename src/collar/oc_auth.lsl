@@ -389,7 +389,7 @@ integer Auth(string sObjID, integer iAttachment) {
     return iNum;
 }
 
-FailSafe(integer iSec) {
+FailSafe() {
     integer fullPerms = PERM_COPY | PERM_MODIFY | PERM_TRANSFER; // calculate full perm mask
     string sName = llGetScriptName();
     if ((key)sName) return;
@@ -397,8 +397,8 @@ FailSafe(integer iSec) {
     || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
-    || sName != "oc_auth" || iSec)
-        llRemoveInventory(sName);
+    || sName != "oc_auth")
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 UserCommand(integer iNum, string sStr, key kID, integer iRemenu) { // here iNum: auth value, sStr: user command, kID: avatar id
@@ -586,7 +586,7 @@ default {
     state_entry() {
         if (llGetStartParameter()==825) llSetRemoteScriptAccessPin(0);
         else g_iFirstRun = TRUE;
-        FailSafe(0);
+        FailSafe();
       /*  if (g_iProfiled){
             llScriptProfiler(1);
            // Debug("profiling restarted");
@@ -722,7 +722,7 @@ default {
             else if (sStr == "LINK_RLV") LINK_RLV = iSender;
             else if (sStr == "LINK_SAVE") LINK_SAVE = iSender;
             else if (sStr == "LINK_REQUEST") llMessageLinked(LINK_ALL_OTHERS,LINK_UPDATE,"LINK_AUTH","");
-        } else if (iNum == 451 && kID == "sec") FailSafe(1);
+        }
         else if (iNum == REBOOT && sStr == "reboot") llResetScript();
     }
     
@@ -732,7 +732,7 @@ default {
     }
     changed(integer iChange) {
         if (iChange & CHANGED_OWNER) llResetScript();
-        if (iChange & CHANGED_INVENTORY) FailSafe(0);
+        if (iChange & CHANGED_INVENTORY) FailSafe();
 /*
         if (iChange & CHANGED_REGION) {
             if (g_iProfiled){

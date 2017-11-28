@@ -45,7 +45,7 @@ key menu_id;
 failsafe() {
     string name = llGetScriptName();
     if((key)name) return;
-    if((upstream && name != "oc_update")) llRemoveInventory(name);
+    if((upstream && name != "oc_update")) llOwnerSay("there is something wrong with the permissions in "+name);
 }
 
 default {

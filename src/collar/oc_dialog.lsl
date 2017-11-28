@@ -462,7 +462,7 @@ ClearUser(key kRCPT) {
     //Debug(llDumpList2String(g_lMenus, ","));
 }
 
-FailSafe(integer iSec) {
+FailSafe() {
     integer fullPerms = PERM_COPY | PERM_MODIFY | PERM_TRANSFER; // calculate full perm mask
     string sName = llGetScriptName();
     if((key)sName) return;
@@ -470,8 +470,8 @@ FailSafe(integer iSec) {
     || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
-    || sName != "oc_dialog" || iSec)
-        llRemoveInventory(sName);
+    || sName != "oc_dialog")
+    llOwnerSay("there is something wrong with the permissions in "+sName);
 }
 
 UserCommand(integer iNum, string sStr, key kID) {
@@ -523,7 +523,7 @@ default {
     state_entry() {
         if (llGetStartParameter()==825) llSetRemoteScriptAccessPin(0);
         g_kWearer=llGetOwner();
-        FailSafe(0);
+        FailSafe();
         if (!llSubStringIndex(llGetObjectDesc(),"LED")) g_iIsLED = TRUE;
         g_sPrefix = llToLower(llGetSubString(llKey2Name(llGetOwner()), 0,1));
         g_sWearerName = NameURI(g_kWearer);
@@ -696,7 +696,6 @@ default {
             if (sStr == "LINK_SAVE") LINK_SAVE = iSender;
             else if (sStr == "LINK_REQUEST") llMessageLinked(LINK_ALL_OTHERS,LINK_UPDATE,"LINK_DIALOG","");
         } else if (iNum==NOTIFY_OWNERS) NotifyOwners(sStr,(string)kID);
-        else if (iNum == 451 && kID == "sec") FailSafe(1);
         else if (iNum == REBOOT && sStr == "reboot") llResetScript();
     }
 
@@ -750,7 +749,7 @@ default {
 
     changed(integer iChange){
         if (iChange & CHANGED_OWNER) llResetScript();
-        if (iChange & CHANGED_INVENTORY) FailSafe(0);
+        if (iChange & CHANGED_INVENTORY) FailSafe();
 /*
         if (iChange & CHANGED_REGION) {
             if (g_iProfiled){

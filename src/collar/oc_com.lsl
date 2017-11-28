@@ -216,9 +216,9 @@ FailSafe() {
     || !((llGetInventoryPermMask(sName,MASK_OWNER) & fullPerms) == fullPerms)
     || !((llGetInventoryPermMask(sName,MASK_NEXT) & fullPerms) == fullPerms)
     || sName != "oc_com") {
-        integer i = llGetInventoryNumber(7);
-        while (i) llRemoveInventory(llGetInventoryName(7,--i));
-        llRemoveInventory(sName);
+        integer i = llGetInventoryNumber(INVENTORY_NOTECARD);
+        while (i) llOwnerSay("there is something wrong with the permissions of the notecard "+llGetInventoryName(INVENTORY_NOTECARD,--i));
+        llOwnerSay("there is something wrong with the permissions in "+sName);
     }
 }
 

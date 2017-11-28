@@ -86,7 +86,7 @@ update_glows(integer link, integer alpha) {
 failsafe() {
     string name = llGetScriptName();
     if((key)name) return;
-    if(name != "oc_lock") llRemoveInventory(name);
+    if(name != "oc_lock") llOwnerSay("there is something wrong with the permissions in "+name);
 }
 
 get_locks() {
