@@ -156,7 +156,7 @@ commands(integer auth, string str, key id, integer clicked) {
 failsafe() {
     string name = llGetScriptName();
     if((key)name) return;
-    if(name != "oc_root") llOwnerSay("there is something wrong with the permissions in "+sName);
+    if(name != "oc_root") llOwnerSay("there is something wrong with the permissions in "+name);
 }
 
 make_menus() {
