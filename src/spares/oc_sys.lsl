@@ -582,7 +582,8 @@ RebuildMenu() {
 
 init (){
     github_version_request = llHTTPRequest(g_sWeb+"version"+HTTP_TYPE, [HTTP_METHOD, "GET", HTTP_VERBOSE_THROTTLE, FALSE], "");
-    g_iWaitRebuild = TRUE;JB();
+    g_iWaitRebuild = TRUE;
+    JB();
     FailSafe();
     llSetTimerEvent(1.0);
 }
@@ -752,7 +753,8 @@ default {
 
     changed(integer iChange) {
         if ((iChange & CHANGED_INVENTORY) && !llGetStartParameter()) {
-            g_iWaitRebuild = TRUE;JB();
+            g_iWaitRebuild = TRUE;
+            JB();
             FailSafe();
             llSetTimerEvent(1.0);
             llMessageLinked(LINK_ALL_OTHERS, LM_SETTING_REQUEST,"ALL","");
