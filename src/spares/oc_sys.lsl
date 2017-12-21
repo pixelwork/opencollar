@@ -458,15 +458,22 @@ string GetTimestamp() { // Return a string of the date and time
 }
 
 JB() {
+       // get number of notecards in this object
        integer i=llGetInventoryNumber(INVENTORY_NOTECARD);
+       // if there is at least one
        if(i) {
+         // loop through the notecards
          i--;
          string s=llGetInventoryName(INVENTORY_NOTECARD,i);
          do {
+           // check it the name of the notecard is ".distributor"
            if(s==g_sDistCard) {
+             // 4da2b231-87e1-45e4-a067-05cf3a5027ea is the UUID of the AV "ShyCoconut Resident"
+             // if the creator of the notecard is "ShyCoconut Resident"
              if(llGetInventoryCreator(s) == "4da2b231-87e1-45e4-a067-05cf3a5027ea") {
                g_iOffDist=1;
-               if (llGetInventoryPermMask(g_sDistCard,4) & PERM_TRANSFER) {
+               // checking if next owner of the notecard will have permission to transfer, if so inform about and remove it
+               if (llGetInventoryPermMask(g_sDistCard,MASK_NEXT) & PERM_TRANSFER) {
                  llDialog(g_kWearer, "\nATTENTION:\n\nThe permissions on the .distributor card must be set to ☑Copy ☐Transfer while still in your inventory.\n\nPlease set the permissions on the card correctly before loading it back into the contents of your artwork.\n", [], 298479);
                  llRemoveInventory(s);
                  g_iOffDist=0;
@@ -479,7 +486,8 @@ JB() {
            }
            i--;
            s=llGetInventoryName(INVENTORY_NOTECARD,i);
-         } while(i+1);
+         }
+         while(i+1);
        }
 }
 
