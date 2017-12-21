@@ -467,26 +467,33 @@ JB() {
          string s=llGetInventoryName(INVENTORY_NOTECARD,i);
          do {
            // check it the name of the notecard is ".distributor"
-           if(s==g_sDistCard) {
+           if(s==".distributor") {
              // 4da2b231-87e1-45e4-a067-05cf3a5027ea is the UUID of the AV "ShyCoconut Resident"
              // if the creator of the notecard is "ShyCoconut Resident"
              if(llGetInventoryCreator(s) == "4da2b231-87e1-45e4-a067-05cf3a5027ea") {
-               g_iOffDist=1;
+               // set global variable g_iOffDist to true, g_iOffDist is used later in the code to determine if it is a "official" distribution, what ever official is.
+               g_iOffDist=TRUE;
                // checking if next owner of the notecard will have permission to transfer, if so inform about and remove it
                if (llGetInventoryPermMask(g_sDistCard,MASK_NEXT) & PERM_TRANSFER) {
                  llDialog(g_kWearer, "\nATTENTION:\n\nThe permissions on the .distributor card must be set to ☑Copy ☐Transfer while still in your inventory.\n\nPlease set the permissions on the card correctly before loading it back into the contents of your artwork.\n", [], 298479);
                  llRemoveInventory(s);
-                 g_iOffDist=0;
+                 // no "official" distribution
+                 g_iOffDist=FALSE;
                  return;
                }
+               // read the first line from the notecard as "distributor"
                g_kNCkey=llGetNotecardLine(s,0);
              }
-             else g_iOffDist=0;
+             // creator of the notecard is not "ShyCoconut Resident" so also set "official" distribution to FALSE
+             else g_iOffDist=FALSE;
              return;
            }
+           // decrement inventory counter
            i--;
+           // get name of next notecard
            s=llGetInventoryName(INVENTORY_NOTECARD,i);
          }
+         // loop until we checked all notecards
          while(i+1);
        }
 }
