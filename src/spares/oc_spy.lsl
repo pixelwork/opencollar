@@ -19,11 +19,10 @@
 //                                          '  `+.;  ;  '      :            //
 //                                          :  '  |    ;       ;-.          //
 //                                          ; '   : :`-:     _.`* ;         //
-//           Spy - 161029.1              .*' /  .*' ; .*`- +'  `*'          //
+//           Spy - 170916.2              .*' /  .*' ; .*`- +'  `*'          //
 //                                       `*-*   `*-*  `*-*'                 //
 // ------------------------------------------------------------------------ //
-//  Copyright (c) 2014 - 2016 littlemousy, Wendy Starfall,                  //
-//  Garvin Twine et al.                                                     //
+//  Copyright (c) 2014 - 2017 littlemousy, Wendy Starfall, Garvin Twine     //
 // ------------------------------------------------------------------------ //
 //  This script is free software: you can redistribute it and/or modify     //
 //  it under the terms of the GNU General Public License as published       //
@@ -37,16 +36,14 @@
 //  You should have received a copy of the GNU General Public License       //
 //  along with this script; if not, see www.gnu.org/licenses/gpl-2.0        //
 // ------------------------------------------------------------------------ //
-//  WARNING: This program requires user consent and must be installed on    //
-//  ones own initiative. All sources of this script, verbatim copies or     //
-//  derivatives must be readable and copyable by all means. For security    //
-//  reasons this script is shipped MODIFY, COPY, NO TRANSFER downstream.    //
-// ------------------------------------------------------------------------ //
 //                          www.virtualdisgrace.com                         //
 // ------------------------------------------------------------------------ //
 //////////////////////////////////////////////////////////////////////////////
 
-string g_sAppVersion = "⁴⋅⁴";
+//string g_sAppVersion = "4.5";
+string g_sBuildVersion = "170916.2";
+
+integer g_iHaveConsent;
 
 string g_sChatBuffer;  //if this has anything in it at end of interval, then tell owners (if listen enabled)
 
@@ -80,7 +77,7 @@ integer LINK_DIALOG = 3;
 integer LINK_SAVE = 5;
 integer LINK_UPDATE = -10;
 integer LM_SETTING_SAVE = 2000;
-//integer LM_SETTING_REQUEST = 2001;
+integer LM_SETTING_REQUEST = 2001;
 integer LM_SETTING_RESPONSE = 2002;
 integer LM_SETTING_DELETE = 2003;
 //integer LM_SETTING_EMPTY = 2004;
@@ -250,7 +247,7 @@ Dialog(key kID, string sPrompt, list lChoices, list lUtilityButtons, integer iPa
 } 
 
 DialogSpy(key kID, integer iAuth) {
-    string sPrompt="\n[http://www.opencollar.at/spy.html Virtual Disgrace™ Spy]\t"+g_sAppVersion;
+    string sPrompt="\n[http://www.opencollar.at/spy.html Virtual Disgrace™ Spy]";
     list lButtons ;
     if(g_iTraceEnabled) lButtons += ["☒ Trace"];
     else lButtons += ["☐ Trace"];
@@ -263,6 +260,19 @@ DialogSpy(key kID, integer iAuth) {
     if (g_iSitEnabled) lButtons += ["☒ Sit"];
     else lButtons += ["☐ Sit"];
     Dialog(kID, sPrompt, lButtons, [UPMENU], 0, iAuth,"spy");
+}
+
+ConsentReply(key kID) {
+    string sPrompt;
+    string sMenuName = "ConsentMenu";
+    if (kID != g_kWearer) {
+        sMenuName += (string)kID;
+        sPrompt = "\nsecondlife:///app/agent/"+(string)kID+"/inspect wants to use your spy app.\n";
+        llDialog(kID,"\nSpy is not functional yet. secondlife:///app/agent/"+(string)g_kWearer+"/inspect has to consent to its use at least once before the app can start. Sending them a confirmation dialog...",["OK"],-12345);
+    }
+    sPrompt += "\nBecause of its privacy sensitive nature, this app requires you to consent to its use at least once.\n\nIf you choose to consent, please proceed with [Yes].\n\nwww.opencollar.at/spy";
+    Dialog(g_kWearer,sPrompt,["Yes","No"],["Cancel"],0,CMD_WEARER,sMenuName);
+
 }
 
 Notify(key kID, string sMsg, integer iAlsoNotifyWearer){
@@ -301,22 +311,34 @@ NotifyOwners(string sMsg) {
     }
 }
 
-FailSafe() {
-    integer noTransPerms = PERM_COPY | PERM_MODIFY; // calculate mask, this script should be no trans for security reasons
-    string sName = llGetScriptName();
-    if((key)sName) return;
-    if (!((llGetObjectPermMask(MASK_OWNER) & PERM_MODIFY) == PERM_MODIFY)
-    || !((llGetObjectPermMask(MASK_NEXT) & PERM_MODIFY) == PERM_MODIFY)
-    || !((llGetInventoryPermMask(sName,MASK_OWNER) & noTransPerms) == noTransPerms)
-    || !((llGetInventoryPermMask(sName,MASK_NEXT) & noTransPerms) == noTransPerms)
-    || sName != "oc_spy" ) llRemoveInventory(sName);
-}
-
 UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
     sStr = llToLower(sStr);
+    if ("runaway" == sStr && kID == g_kWearer) {
+        g_iListenEnabled    = FALSE;
+        g_iLoginEnabled     = FALSE;
+        g_iTouchEnabled     = FALSE;
+        g_iSitEnabled       = FALSE;
+        g_iTraceEnabled     = FALSE;
+        g_iNotifyEnabled    = FALSE;
+        llListenRemove(g_iListener);
+        g_iListener = 0;
+        g_lOwners = [];
+        g_lTempOwners = [];
+        llMessageLinked(LINK_SAVE, LM_SETTING_DELETE, g_sSettingToken+"all", "");
+        llMessageLinked(LINK_DIALOG, NOTIFY,"0"+"Spy settings reset.", g_kWearer);
+        return;
+    } else if (sStr == "spy" || sStr == "menu spy") {
+        if (!g_iHaveConsent) ConsentReply(kID);
+        else DialogSpy(kID, iAuth);
+    } else if (sStr ==  "rm spy") {
+        if (iAuth == CMD_OWNER || kID == g_kWearer) 
+            Dialog(kID, "\nDo you really want to uninstall the Spy App?", ["Yes","No","Cancel"], [], 0, iAuth,"rmspy");
+        else Notify(kID,"Access denied.",FALSE);
+    }
     if (sStr == "☐ trace" || sStr == "trace on") {
         if (iAuth == CMD_OWNER) {
-            if (!g_iTraceEnabled) {
+            if (!g_iHaveConsent) ConsentReply(kID);
+            else if (!g_iTraceEnabled) {
                 g_iTraceEnabled=TRUE;
                 Notify(kID,"\n\nTrace enabled.\n",TRUE);
                 llMessageLinked(LINK_SAVE, LM_SETTING_SAVE, g_sSettingToken+"trace=1", "");
@@ -340,7 +362,8 @@ UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
         } else Notify(kID,"Access denied.",TRUE);
     } else if(sStr == "☐ touch" || sStr == "touch on") {
         if (iAuth == CMD_OWNER) {
-            if (!g_iTouchEnabled){
+            if (!g_iHaveConsent) ConsentReply(kID);
+            else if (!g_iTouchEnabled){
                 g_iTouchEnabled=TRUE;
                 Notify(kID,"\n\nTouch enabled.\n",TRUE);
                 llMessageLinked(LINK_SAVE, LM_SETTING_SAVE, g_sSettingToken+"touch=1", "");
@@ -357,7 +380,8 @@ UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
         } else Notify(kID,"Access denied.",TRUE);
     } else if(sStr == "☐ sit" || sStr == "sit on") {
         if (iAuth == CMD_OWNER) {
-            if (!g_iSitEnabled){
+            if (!g_iHaveConsent) ConsentReply(kID);
+            else if (!g_iSitEnabled){
                 g_iSitEnabled=TRUE;
                 Notify(kID,"\n\nSit notify enabled.\n",TRUE);
                 llSetTimerEvent(10);
@@ -374,7 +398,8 @@ UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
         } else Notify(kID,"Access denied.",TRUE);
     } else if(sStr == "☐ login" || sStr == "login on") {
         if (iAuth == CMD_OWNER) {
-            if (!g_iLoginEnabled){
+            if (!g_iHaveConsent) ConsentReply(kID);
+            else if (!g_iLoginEnabled){
                 g_iLoginEnabled=TRUE;
                 Notify(kID,"\n\nLogin notify enabled.\n",TRUE);
                 llMessageLinked(LINK_SAVE, LM_SETTING_SAVE, g_sSettingToken+"login=1", "");
@@ -382,7 +407,8 @@ UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
         } else Notify(kID,"Access denied.",TRUE);
     } else if(sStr == "☐ listen" || sStr == "listen on") {
         if (iAuth == CMD_OWNER) {
-            if (!g_iListenEnabled) {
+            if (!g_iHaveConsent) ConsentReply(kID);
+            else if (!g_iListenEnabled) {
                 g_iListenEnabled=TRUE;
                 Notify(kID,"\n\nChat Spy enabled.\n",TRUE);
                 llMessageLinked(LINK_SAVE, LM_SETTING_SAVE, g_sSettingToken+"listen=1", "");
@@ -401,39 +427,21 @@ UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
             }
         } else Notify(kID,"Access denied.",TRUE);
     } else if (sStr == "spynotify on") {
-        if (kID==g_kWearer) {
+        if (kID == g_kWearer) {
             if (!g_iNotifyEnabled) {
-                g_iNotifyEnabled=TRUE;
+                g_iNotifyEnabled = TRUE;
                 Notify(kID,"\n\nSpy notifications enabled.\n",TRUE);
                 llMessageLinked(LINK_SAVE, LM_SETTING_SAVE, g_sSettingToken+"notify=1", "");
             }
         } else Notify(kID,"\n\nOnly the wearer may enable spy notifications.\n",TRUE);
     } else if (sStr == "spynotify off") {
-        if (kID==g_kWearer) {
+        if (kID == g_kWearer) {
             if (g_iNotifyEnabled){
-                g_iNotifyEnabled=FALSE;
+                g_iNotifyEnabled = FALSE;
                 Notify(kID,"\n\nSpy notifications disabled.\n",TRUE);
                 llMessageLinked(LINK_SAVE, LM_SETTING_DELETE, g_sSettingToken+"notify", "");
             }
         } else Notify(kID,"\n\nOnly the wearer may enable spy notifications.\n",TRUE);
-    } else if ("runaway" == sStr) {
-        g_iListenEnabled    = FALSE;
-        g_iLoginEnabled     = FALSE;
-        g_iTouchEnabled     = FALSE;
-        g_iSitEnabled       = FALSE;
-        g_iTraceEnabled     = FALSE;
-        g_iNotifyEnabled    = FALSE;
-        llListenRemove(g_iListener);
-        g_iListener = 0;
-        g_lOwners = [];
-        g_lTempOwners = [];
-        llMessageLinked(LINK_SAVE, LM_SETTING_DELETE, g_sSettingToken+"all", "");
-        llMessageLinked(LINK_DIALOG, NOTIFY,"0"+"Spy settings reset.", g_kWearer);
-    } else if (sStr == "spy" || sStr == "menu spy") DialogSpy(kID, iAuth);
-    else if (sStr ==  "rm spy") {
-        if (iAuth == CMD_OWNER || kID == g_kWearer) 
-            Dialog(kID, "\nDo you really want to uninstall the Spy App?", ["Yes","No","Cancel"], [], 0, iAuth,"rmspy");            
-        else Notify(kID,"Access denied.",FALSE);
     }
     if (remenu) DialogSpy(kID,iAuth);
 }
@@ -441,22 +449,26 @@ UserCommand (integer iAuth, string sStr, key kID, integer remenu) {
 default {
     state_entry() {
         //llSetMemoryLimit(32768);  //2015-05-06 (6622 bytes free)
+        if (llGetInventoryType("vd_installer") == INVENTORY_SCRIPT) return;
         g_kWearer = llGetOwner();
-        FailSafe();
         g_sDeviceName = llGetObjectName();
         g_sWearerName = llKey2Name(g_kWearer);
         g_lOwners = [g_kWearer];  // initially self-owned until we hear a db message otherwise
         llSetTimerEvent(300);
+        if ((llGetInventoryPermMask(llGetScriptName(),MASK_OWNER) & PERM_COPY) == PERM_COPY)
+            llListen(-287549127,"","","vd_app version?");
+        ConsentReply(g_kWearer);
         //Debug("Starting");
     }
 
-    listen(integer channel, string sName, key kID, string sMessage) {
-        if(kID == g_kWearer && channel == 0) {
+    listen(integer iChannel, string sName, key kID, string sMessage) {
+        if (kID == g_kWearer && iChannel == 0) {
             //process emotes, replace with sub name
-            if(llGetSubString(sMessage, 0, 3) == "/me ") sMessage=g_sWearerName + llGetSubString(sMessage, 3, -1);
-            else sMessage=g_sWearerName+": " + sMessage;
+            if(llGetSubString(sMessage, 0, 3) == "/me ") sMessage = g_sWearerName + llGetSubString(sMessage, 3, -1);
+            else sMessage = g_sWearerName+": " + sMessage;
             DoReports(sMessage,FALSE,FALSE);
-        }
+        } else if (iChannel == -287549127)
+            llRegionSayTo(kID,iChannel,"spy:"+g_sBuildVersion);
     }
 
     link_message(integer iSender, integer iNum, string sStr, key kID) {
@@ -474,6 +486,7 @@ default {
             string sToken = llList2String(lParams, 0);
             string sValue = llList2String(lParams, 1);
             if (llSubStringIndex(sToken, g_sSettingToken+"")==0) { //spy data
+                if (!g_iHaveConsent) return; //we dont load nothing without consent!
                 if (sToken == g_sSettingToken+"trace") {
                     if (!g_iTraceEnabled) {
                         g_iTraceEnabled=TRUE;
@@ -526,7 +539,19 @@ default {
                 integer iAuth = (integer)llList2String(lMenuParams, 3);
                 string sMenu = llList2String(g_lMenuIDs, iMenuIndex + 1);
                 g_lMenuIDs = llDeleteSubList(g_lMenuIDs, iMenuIndex - 1, iMenuIndex - 2 + g_iMenuStride);
-                if (sMenu == "spy") {
+                if (!llSubStringIndex(sMenu,"ConsentMenu")) {
+                    if (sMessage == "Yes") {
+                        g_iHaveConsent = TRUE;
+                        llMessageLinked(LINK_SAVE,LM_SETTING_REQUEST,"spy","");
+                        Notify(kAv,"\n\nYou consent to the use of privacy sensitive features on this device. If you want to revoke your consent, please reboot your device.\n\nwww.opencollar.at/spy\n",FALSE);
+                        if (sMenu != "ConsentMenu")
+                            Notify(llGetSubString(sMenu,-36,-1),"\n\nsecondlife:///app/agent/"+(string)g_kWearer+"/inspect consents to the use of privacy sensitive features on this device.\n",FALSE);
+                    } else {
+                        Notify(kAv,"\n\nSpy app not authorized to process any data.\n",FALSE);
+                        if (sMenu != "ConsentMenu")
+                            Notify(llGetSubString(sMenu,-36,-1),"\n\nsecondlife:///app/agent/"+(string)g_kWearer+"/inspect declined their consent to use the spy app.",FALSE);
+                    }
+                } else if (sMenu == "spy") {
                     if (sMessage == UPMENU) llMessageLinked(LINK_ROOT, iAuth, "menu apps", kAv);
                     else UserCommand(iAuth, sMessage, kAv, TRUE);
                 } else if (sMenu == "rmspy") {
@@ -578,7 +603,6 @@ default {
             if (iChange & CHANGED_REGION) DoReports("",TRUE,FALSE);
         }
         if (iChange & CHANGED_OWNER) llResetScript();
-        if (iChange & CHANGED_INVENTORY) FailSafe();
 /*        
         if (iChange & CHANGED_REGION) {
             if (g_iProfiled){
@@ -589,4 +613,3 @@ default {
 */        
     }
 }
-
