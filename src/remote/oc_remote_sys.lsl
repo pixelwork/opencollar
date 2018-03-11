@@ -19,10 +19,10 @@
 //                                          '  `+.;  ;  '      :            //
 //                                          :  '  |    ;       ;-.          //
 //                                          ; '   : :`-:     _.`* ;         //
-//       Remote System - 170620.1        .*' /  .*' ; .*`- +'  `*'          //
+//       Remote System - 180205.1        .*' /  .*' ; .*`- +'  `*'          //
 //                                       `*-*   `*-*  `*-*'                 //
 // ------------------------------------------------------------------------ //
-//  Copyright (c) 2014 - 2017 Nandana Singh, Jessenia Mocha, Alexei Maven,  //
+//  Copyright (c) 2014 - 2018 Nandana Singh, Jessenia Mocha, Alexei Maven,  //
 //  Master Starship, Wendy Starfall, North Glenwalker, Ray Zopf, Sumi Perl, //
 //  Kire Faulkes, Zinn Ixtar, Builder's Brewery, Romka Swallowtail et al.   //
 // ------------------------------------------------------------------------ //
@@ -88,7 +88,7 @@ integer g_iPicturePrim;
 string g_sPictureID;
 key g_kPicRequest;
 string g_sMetaFind = "<meta name=\"imageid\" content=\"";
-string g_sTextureALL ="4fb4a7fe-733b-fae7-810d-81e6784bc3c3";
+string g_sTextureALL ="";
 
 //  MESSAGE MAP
 integer CMD_TOUCH            = 100;
@@ -101,7 +101,7 @@ integer DIALOG               = -9000;
 integer DIALOG_RESPONSE      = -9001;
 integer DIALOG_TIMEOUT       = -9002;
 integer CMD_REMOTE           = 10000;
-
+integer UPDATE = 5555;
 string UPMENU          = "BACK";
 string g_sListPartners  = "List";
 string g_sRemovePartner = "Remove";
@@ -365,7 +365,10 @@ default {
             lParams = [];
         } else if (iNum == SUBMENU && sStr == "Main") MainMenu();
         else if (iNum == CMD_REMOTE) SendCollarCommand(sStr);
-        else if (iNum == 111) {
+        else if (iNum == UPDATE) {
+            if (sStr != "") g_lPartners = llCSV2List(sStr);
+            else llMessageLinked(iSender,UPDATE+1,llList2CSV(g_lPartners),"");
+        } else if (iNum == 111) {
             g_sTextureALL = sStr;
             if (g_sActivePartnerID == g_sAllPartners)
                 llSetLinkPrimitiveParamsFast(g_iPicturePrim,[PRIM_TEXTURE, ALL_SIDES, g_sTextureALL , <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0]);
@@ -493,7 +496,7 @@ default {
         } else if (kRequestID == g_kPicRequest) {
             integer iMetaPos =  llSubStringIndex(sBody, g_sMetaFind) + llStringLength(g_sMetaFind);
             string sTexture  = llGetSubString(sBody, iMetaPos, iMetaPos + 35);
-            if ((key)sTexture == NULL_KEY) sTexture = "ff3c4a89-8649-2bb0-6521-624be1305d29";
+            if ((key)sTexture == NULL_KEY) sTexture = "";
             if (g_iPicturePrim) llSetLinkPrimitiveParamsFast(g_iPicturePrim,[PRIM_TEXTURE, ALL_SIDES, sTexture,<1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0]);
         }
     }

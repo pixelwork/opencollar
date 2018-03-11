@@ -19,10 +19,10 @@
 //                                          '  `+.;  ;  '      :            //
 //                                          :  '  |    ;       ;-.          //
 //                                          ; '   : :`-:     _.`* ;         //
-//     OpenCollar AO - 170620.1          .*' /  .*' ; .*`- +'  `*'          //
+//     OpenCollar AO - 180205.1          .*' /  .*' ; .*`- +'  `*'          //
 //                                       `*-*   `*-*  `*-*'                 //
 // ------------------------------------------------------------------------ //
-//  Copyright (c) 2008 - 2017 Nandana Singh, Jessenia Mocha, Alexei Maven,  //
+//  Copyright (c) 2008 - 2018 Nandana Singh, Jessenia Mocha, Alexei Maven,  //
 //  Wendy Starfall, littlemousy, Romka Swallowtail, Garvin Twine et al.     //
 // ------------------------------------------------------------------------ //
 //  This script is free software: you can redistribute it and/or modify     //
@@ -137,15 +137,15 @@ FindButtons() { // collect buttons names & links
 DoTextures(string style) {
     list lTextures = [
     "Dark",
-    "Minimize~e1482c7e-8609-fcb0-56d8-18c3c94d21c0",
-    "Power~e630e9e0-799e-6acc-e066-196cca7b37d4",
-    "SitAny~251b2661-235e-b4d8-0c75-248b6bdf6675",
-    "Menu~f3ec1052-6ec4-04ba-d752-937a4d837bf8",
+    "Minimize~",
+    "Power~",
+    "SitAny~",
+    "Menu~",
     "Light",
-    "Minimize~b59f9932-5de4-fc23-b5aa-2ab46d22c9a6",
-    "Power~42d4d624-ca72-1c74-0045-f782d7409061",
-    "SitAny~349340c5-0045-c32d-540e-52b6fb77af55",
-    "Menu~52c3f4cf-e87e-dbdd-cf18-b2c4f6002a96"
+    "Minimize~",
+    "Power~",
+    "SitAny~",
+    "Menu~"
     ];
     integer i = llListFindList(lTextures,[style]);
     integer iEnd = i+4;
@@ -518,7 +518,7 @@ FailSafe() {
 
 default {
     state_entry() {
-        if (llGetInventoryType("oc_installer_sys")==INVENTORY_SCRIPT) return;
+        if (llGetInventoryType("vd_installer")==INVENTORY_SCRIPT) return;
         g_kWearer = llGetOwner();
         FailSafe();
         g_iInterfaceChannel = -llAbs((integer)("0x" + llGetSubString(g_kWearer,30,-1)));
@@ -677,8 +677,10 @@ default {
                     g_lAnims2Choose = [];
                     if (llGetInventoryType(sMessage) == INVENTORY_ANIMATION) {
                         if (sMenuType == "Sitting") g_sSitAnim = sMessage;
-                        else if (sMenuType == "Sitting on Ground") g_sSitAnywhereAnim = sMessage;
-                        else if (sMenuType == "Walking") g_sWalkAnim = sMessage;
+                        else if (sMenuType == "Sitting on Ground") {
+                            g_sSitAnywhereAnim = sMessage;
+                            if (g_iSitAnywhereOn) llSetAnimationOverride("Standing",sMessage);
+                        } else if (sMenuType == "Walking") g_sWalkAnim = sMessage;
                         if (g_iAO_ON && (sMenuType != "Sitting" || g_iSitAnimOn))
                             llSetAnimationOverride(sMenuType,sMessage);
                     } else llOwnerSay("No "+sMenuType+" animation set.");
